@@ -61,6 +61,24 @@ const order1006 = {
   total: 1305.11
 };
 
+// Test data for order #1004 (SAVE10 discount cap)
+const order1004 = {
+  id: 1004,
+  date: '30/01/2022',
+  customer: 'Kalyani Foods (Wholesale)',
+  customerId: 5,
+  paymentMode: 'khata',
+  status: 'completed',
+  items: [
+    { id: 5, sku: 'OIL-002', name: 'Cold-Pressed Groundnut Oil 5L', hsn: '1508', price: 1120, qty: 2 }
+  ],
+  coupon: 'SAVE10',
+  subtotal: 2240,
+  discount: 150,
+  tax: 104.5,
+  total: 2194.5
+};
+
 describe('invoice.computeInvoiceFigures', function () {
   it('CURRENT BEHAVIOUR: matches pricing.computeTotals for order 1002 (SAVE10, 5% GST items)', function () {
     const invoiceFigures = invoice.computeInvoiceFigures(order1002);
@@ -126,5 +144,15 @@ describe('invoice.computeInvoiceFigures', function () {
     // Total tax = 45.9, half = 22.95 each
     assert.strictEqual(figures.cgst, 22.95);
     assert.strictEqual(figures.sgst, 22.95);
+  });
+
+  it('applies the SAVE10 maximum discount and matches the 1004 ledger total', function () {
+    const figures = invoice.computeInvoiceFigures(order1004);
+    const pricingTotals = pricing.computeTotals(order1004.items, order1004.coupon);
+
+    assert.strictEqual(figures.discount, 150);
+    assert.strictEqual(figures.tax, 104.5);
+    assert.strictEqual(figures.total, 2194.5);
+    assert.strictEqual(figures.total, pricingTotals.total);
   });
 });
